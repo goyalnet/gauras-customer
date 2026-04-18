@@ -251,6 +251,30 @@
           <input class="fcontrol" id="reg-evening" type="number" min="0" step="1" placeholder="0" value="0">
         </div>
         <div class="fg">
+          <label class="flabel">Delivery Start Date</label>
+          <input class="fcontrol" id="reg-start" type="date">
+          <span class="fhint">When would you like delivery to begin?</span>
+        </div>
+        <div class="fg">
+          <label class="flabel">Delivery Days</label>
+          <select class="fcontrol" id="reg-sched" onchange="toggleRegDays(this.value)">
+            <option value="Daily">Daily (all 7 days)</option>
+            <option value="Custom">Custom days</option>
+          </select>
+        </div>
+        <div class="fg" id="reg-days-wrap" style="display:none">
+          <label class="flabel">Select Days</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="1" class="reg-day"> Mon</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="2" class="reg-day"> Tue</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="3" class="reg-day"> Wed</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="4" class="reg-day"> Thu</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="5" class="reg-day"> Fri</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="6" class="reg-day"> Sat</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px"><input type="checkbox" value="0" class="reg-day"> Sun</label>
+          </div>
+        </div>
+        <div class="fg">
           <label class="flabel">Additional Notes</label>
           <input class="fcontrol" id="reg-notes" placeholder="Any special instructions">
         </div>
@@ -554,6 +578,11 @@ function doLogout() {
 }
 
 // ── CHECK EXISTING SESSION ──
+function toggleRegDays(val) {
+  var wrap = document.getElementById('reg-days-wrap');
+  if (wrap) wrap.style.display = val==='Custom' ? 'block' : 'none';
+}
+
 async function initRegForm() {
   // Load settings to show/hide evening qty
   try {
@@ -580,6 +609,14 @@ async function submitRegistration() {
   var ewrap = document.getElementById('reg-evening-wrap');
   var evening  = (!ewrap || ewrap.style.display==='none') ? 0 : (parseInt(document.getElementById('reg-evening').value)||0);
   var notes    = (document.getElementById('reg-notes').value||'').trim();
+  var startDate = (document.getElementById('reg-start').value||'').trim() || null;
+  var schedType = (document.getElementById('reg-sched').value||'Daily');
+  var schedDays = '';
+  if (schedType==='Custom') {
+    var checked = document.querySelectorAll('.reg-day:checked');
+    schedDays = Array.from(checked).map(function(c){ return c.value; }).join(',');
+    if (!schedDays) { errEl.textContent='Please select at least one delivery day'; errEl.style.display='block'; return; }
+  }
 
   var errEl = document.getElementById('reg-error');
   errEl.style.display = 'none';
@@ -619,6 +656,9 @@ async function submitRegistration() {
       morning_qty: morning,
       evening_qty: evening,
       notes: notes || null,
+      start_date: startDate,
+      schedule_type: schedType,
+      schedule_days: schedDays || null,
       status: 'Pending',
       requested_at: new Date().toISOString()
     };
@@ -627,7 +667,10 @@ async function submitRegistration() {
 
     // Show success
     var infoEl = document.getElementById('reg-done-info');
-    if (infoEl) infoEl.innerHTML = '<strong>'+esc(fname)+' '+esc(lname)+'</strong><br>Phone: '+phone+'<br>Milk: '+morning+'L morning + '+evening+'L evening';
+    if (infoEl) infoEl.innerHTML = '<strong>'+esc(fname)+' '+esc(lname)+'</strong><br>Phone: '+phone
+      +'<br>Milk: '+morning+'L morning + '+evening+'L evening'
+      +(startDate?'<br>Start: '+fmtDate(startDate):'')
+      +'<br>Schedule: '+schedType+(schedType==='Custom'?' ('+schedDays+')':'');
     goStep('step-reg-done');
 
   } catch(e) {
