@@ -369,10 +369,10 @@ async function lookupPhone() {
   btn.textContent = 'Looking up...'; btn.disabled = true;
   try {
     // Search by phone or whatsapp
-    var results = await db.get('gs_customers', 'phone=eq.'+phone+'&is_active=eq.true&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,pin_set_at,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
+    var results = await db.get('gs_customers', 'phone=eq.'+phone+'&status=neq.Stopped&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,pin_set_at,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
     if (!results || results.length === 0) {
       // Try whatsapp number
-      results = await db.get('gs_customers', 'whatsapp=eq.'+phone+'&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,pin_set_at,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
+      results = await db.get('gs_customers', 'whatsapp=eq.'+phone+'&status=neq.Stopped&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,pin_set_at,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
     }
     if (!results || results.length === 0) {
       showLoginError('phone-error', 'Phone number not found. Please contact your dairy.');
