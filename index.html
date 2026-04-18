@@ -427,7 +427,7 @@ function showLoginError(id, msg) {
 
 // ── LOGIN FLOW ──
 async function lookupPhone() {
-  var phone = (document.getElementById('inp-phone').value||'').trim().replace(/\D/g,'');
+  var phone = (document.getElementById('inp-phone').value||'').trim().replace(/[^0-9]/g,'');
   if (!phone || phone.length < 10) return showLoginError('phone-error', 'Please enter a valid 10-digit phone number');
   var btn = document.getElementById('btn-phone');
   btn.textContent = 'Looking up...'; btn.disabled = true;
@@ -557,8 +557,8 @@ async function initRegForm() {
 async function submitRegistration() {
   var fname = (document.getElementById('reg-fname').value||'').trim();
   var lname = (document.getElementById('reg-lname').value||'').trim();
-  var phone = (document.getElementById('reg-phone').value||'').trim().replace(/\D/g,'');
-  var wa    = (document.getElementById('reg-wa').value||'').trim().replace(/\D/g,'');
+  var phone = (document.getElementById('reg-phone').value||'').trim().replace(/[^0-9]/g,'');
+  var wa    = (document.getElementById('reg-wa').value||'').trim().replace(/[^0-9]/g,'');
   var building = (document.getElementById('reg-building').value||'').trim();
   var street   = (document.getElementById('reg-street').value||'').trim();
   var city     = (document.getElementById('reg-city').value||'').trim();
@@ -576,6 +576,7 @@ async function submitRegistration() {
 
   var btn = document.getElementById('btn-register');
   btn.textContent = 'Submitting...'; btn.disabled = true;
+  console.log('Submitting registration:', fname, phone, morning, evening);
 
   try {
     // Check if phone already registered
