@@ -381,16 +381,27 @@ function toast(msg, type) {
 // ── BRAND ──
 async function applyBrand() {
   try {
-    // Load brand from Supabase settings
-    var rows = await db.get('gs_settings', 'setting_key=in.(brand_name,brand_sub)');
+    var rows = await db.get('gs_settings', 'setting_key=in.(brand_name,brand_sub,brand_logo)');
     var settings = {};
     rows.forEach(function(r){ settings[r.setting_key] = r.setting_value; });
     var name = settings['brand_name'] || '';
-    var sub = settings['brand_sub'] || '';
+    var sub  = settings['brand_sub']  || '';
+    var logo = settings['brand_logo'] || '';
+    // Apply farm name
     var nameEl = document.getElementById('c-farm-name');
     if (nameEl) nameEl.textContent = name || 'My Dairy';
+    // Apply tagline
     var subEl = document.getElementById('c-farm-tagline');
-    if (subEl && sub) subEl.textContent = sub;
+    if (subEl) subEl.textContent = sub;
+    // Apply logo
+    var logoWrap = document.getElementById('c-farm-logo-wrap');
+    if (logoWrap) {
+      if (logo) {
+        logoWrap.innerHTML = '<img src="'+logo+'" style="width:80px;height:80px;object-fit:contain;border-radius:12px;margin:8px auto;display:block" alt="Farm Logo">';
+      } else {
+        logoWrap.innerHTML = '';
+      }
+    }
   } catch(e){}
 }
 
