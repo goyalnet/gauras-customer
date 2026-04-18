@@ -140,6 +140,7 @@
     <div class="login-card">
       <div class="login-brand">
         <div class="login-farm-name" id="c-farm-name">My Dairy</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="c-farm-tagline"></div>
         <div id="c-farm-logo-wrap"></div>
         <div class="login-app-name">🥛 GauRas</div>
         <div class="login-app-sub">Milk Distribution Management</div>
@@ -378,16 +379,18 @@ function toast(msg, type) {
 }
 
 // ── BRAND ──
-function applyBrand() {
+async function applyBrand() {
   try {
-    var name = localStorage.getItem('gauras_brand_name') || '';
-    var logo = localStorage.getItem('gauras_logo') || '';
+    // Load brand from Supabase settings
+    var rows = await db.get('gs_settings', 'setting_key=in.(brand_name,brand_sub)');
+    var settings = {};
+    rows.forEach(function(r){ settings[r.setting_key] = r.setting_value; });
+    var name = settings['brand_name'] || '';
+    var sub = settings['brand_sub'] || '';
     var nameEl = document.getElementById('c-farm-name');
     if (nameEl) nameEl.textContent = name || 'My Dairy';
-    var logoWrap = document.getElementById('c-farm-logo-wrap');
-    if (logoWrap && logo) {
-      logoWrap.innerHTML = '<img src="'+logo+'" class="login-farm-logo" alt="Logo">';
-    }
+    var subEl = document.getElementById('c-farm-tagline');
+    if (subEl && sub) subEl.textContent = sub;
   } catch(e){}
 }
 
