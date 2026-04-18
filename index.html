@@ -156,6 +156,10 @@
           <span class="fhint">Enter the phone number registered with your dairy</span>
         </div>
         <button class="btn btn-primary btn-full" onclick="lookupPhone()" id="btn-phone">Continue →</button>
+        <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;color:var(--text-hint);margin-bottom:6px">New customer?</div>
+          <button class="btn-link" onclick="goStep('step-register')">Register here →</button>
+        </div>
       </div>
 
       <!-- Step 2a: Enter PIN -->
@@ -203,6 +207,66 @@
         <button class="btn btn-primary btn-full" onclick="savePin()">Set PIN & Login</button>
         <div style="text-align:center;margin-top:12px">
           <button class="btn-link" onclick="goStep('step-phone')">← Back</button>
+        </div>
+      </div>
+      <!-- Step 3: Register -->
+      <div class="login-step" id="step-register">
+        <div class="login-heading">New Customer Registration</div>
+        <div class="login-error" id="reg-error"></div>
+        <div class="fg">
+          <label class="flabel">First Name <span style="color:var(--danger)">*</span></label>
+          <input class="fcontrol" id="reg-fname" placeholder="Your first name">
+        </div>
+        <div class="fg">
+          <label class="flabel">Last Name</label>
+          <input class="fcontrol" id="reg-lname" placeholder="Your last name">
+        </div>
+        <div class="fg">
+          <label class="flabel">Phone Number <span style="color:var(--danger)">*</span></label>
+          <input class="fcontrol" id="reg-phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
+        </div>
+        <div class="fg">
+          <label class="flabel">WhatsApp Number</label>
+          <input class="fcontrol" id="reg-wa" type="tel" inputmode="numeric" maxlength="10" placeholder="If different from phone">
+        </div>
+        <div class="fg">
+          <label class="flabel">Building / Flat</label>
+          <input class="fcontrol" id="reg-building" placeholder="Building name and flat no.">
+        </div>
+        <div class="fg">
+          <label class="flabel">Street / Area</label>
+          <input class="fcontrol" id="reg-street" placeholder="Street or area name">
+        </div>
+        <div class="fg">
+          <label class="flabel">City</label>
+          <input class="fcontrol" id="reg-city" placeholder="City">
+        </div>
+        <div class="fg">
+          <label class="flabel">Morning Milk Required (Litres)</label>
+          <input class="fcontrol" id="reg-morning" type="number" min="0" step="1" placeholder="0" value="0">
+        </div>
+        <div class="fg">
+          <label class="flabel">Evening Milk Required (Litres)</label>
+          <input class="fcontrol" id="reg-evening" type="number" min="0" step="1" placeholder="0" value="0">
+        </div>
+        <div class="fg">
+          <label class="flabel">Additional Notes</label>
+          <input class="fcontrol" id="reg-notes" placeholder="Any special instructions">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="submitRegistration()" id="btn-register">Submit Registration</button>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn-link" onclick="goStep('step-phone')">← Back to Login</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Registration submitted -->
+      <div class="login-step" id="step-reg-done">
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:48px;margin-bottom:16px">✅</div>
+          <div style="font-size:18px;font-weight:700;color:var(--brand);margin-bottom:10px">Registration Submitted!</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:20px">Your registration request has been sent to the dairy. You will be able to login once the admin approves your request.</div>
+          <div style="background:var(--brand-light);border-radius:10px;padding:14px;font-size:13px;color:var(--brand-dark);margin-bottom:20px" id="reg-done-info"></div>
+          <button class="btn btn-outline btn-full" onclick="goStep('step-phone')">← Back to Login</button>
         </div>
       </div>
     </div>
@@ -476,6 +540,71 @@ function doLogout() {
 }
 
 // ── CHECK EXISTING SESSION ──
+async function submitRegistration() {
+  var fname = (document.getElementById('reg-fname').value||'').trim();
+  var lname = (document.getElementById('reg-lname').value||'').trim();
+  var phone = (document.getElementById('reg-phone').value||'').trim().replace(/\D/g,'');
+  var wa    = (document.getElementById('reg-wa').value||'').trim().replace(/\D/g,'');
+  var building = (document.getElementById('reg-building').value||'').trim();
+  var street   = (document.getElementById('reg-street').value||'').trim();
+  var city     = (document.getElementById('reg-city').value||'').trim();
+  var morning  = parseInt(document.getElementById('reg-morning').value)||0;
+  var evening  = parseInt(document.getElementById('reg-evening').value)||0;
+  var notes    = (document.getElementById('reg-notes').value||'').trim();
+
+  var errEl = document.getElementById('reg-error');
+  errEl.style.display = 'none';
+
+  if (!fname) { errEl.textContent='First name is required'; errEl.style.display='block'; return; }
+  if (!phone || phone.length < 10) { errEl.textContent='Please enter a valid 10-digit phone number'; errEl.style.display='block'; return; }
+  if (morning===0 && evening===0) { errEl.textContent='Please enter morning or evening milk quantity'; errEl.style.display='block'; return; }
+
+  var btn = document.getElementById('btn-register');
+  btn.textContent = 'Submitting...'; btn.disabled = true;
+
+  try {
+    // Check if phone already registered
+    var existing = await db.get('gs_customers', 'phone=eq.'+phone+'&select=id');
+    if (existing && existing.length > 0) {
+      errEl.textContent = 'This phone number is already registered. Please login instead.';
+      errEl.style.display = 'block';
+      return;
+    }
+    // Check if already has a pending registration
+    var pending = await db.get('gs_registrations', 'phone=eq.'+phone+'&status=eq.Pending&select=id');
+    if (pending && pending.length > 0) {
+      errEl.textContent = 'A registration request for this number is already pending approval.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    await db.insert('gs_registrations', {
+      first_name: fname,
+      last_name: lname || null,
+      phone: phone,
+      whatsapp: wa || null,
+      building_name: building || null,
+      street: street || null,
+      city: city || null,
+      morning_qty: morning,
+      evening_qty: evening,
+      notes: notes || null,
+      status: 'Pending'
+    });
+
+    // Show success
+    var infoEl = document.getElementById('reg-done-info');
+    if (infoEl) infoEl.innerHTML = '<strong>'+esc(fname)+' '+esc(lname)+'</strong><br>Phone: '+phone+'<br>Milk: '+morning+'L morning + '+evening+'L evening';
+    goStep('step-reg-done');
+
+  } catch(e) {
+    errEl.textContent = 'Error: '+e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.textContent = 'Submit Registration'; btn.disabled = false;
+  }
+}
+
 async function checkSession() {
   try {
     var saved = sessionStorage.getItem('gauras_cust_session');
