@@ -578,7 +578,7 @@ async function submitRegistration() {
       return;
     }
 
-    await db.insert('gs_registrations', {
+    var regData = {
       first_name: fname,
       last_name: lname || null,
       phone: phone,
@@ -589,8 +589,11 @@ async function submitRegistration() {
       morning_qty: morning,
       evening_qty: evening,
       notes: notes || null,
-      status: 'Pending'
-    });
+      status: 'Pending',
+      requested_at: new Date().toISOString()
+    };
+    var insertResult = await db.insert('gs_registrations', regData);
+    if (!insertResult || !insertResult.length) throw new Error('Registration could not be saved. Please try again.');
 
     // Show success
     var infoEl = document.getElementById('reg-done-info');
@@ -598,7 +601,10 @@ async function submitRegistration() {
     goStep('step-reg-done');
 
   } catch(e) {
-    errEl.textContent = 'Error: '+e.message;
+    var msg = e.message || 'Unknown error';
+    if (msg.includes('Failed to fetch')) msg = 'Network error — please check your internet connection and try again.';
+    if (msg.includes('foreign key')) msg = 'Registration data error — please contact your dairy.';
+    errEl.textContent = msg;
     errEl.style.display = 'block';
   } finally {
     btn.textContent = 'Submit Registration'; btn.disabled = false;
