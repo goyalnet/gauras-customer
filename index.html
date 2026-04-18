@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GauRas — My Account</title>
+<style>
+  :root {
+    --brand:#0F6E56; --brand-dark:#085041; --brand-light:#E8F5F1; --brand-mid:#1A9070;
+    --accent:#D97706; --danger:#DC2626; --danger-light:#FEF2F2;
+    --surface:#FFFFFF; --bg:#F4F7F5; --border:#E2EAE7; --text:#1A2E28;
+    --text-muted:#4A6560; --text-hint:#8AADA6; --radius:12px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* ── SCREENS ── */
+  .screen { display:none; min-height:100vh; flex-direction:column; }
+  .screen.active { display:flex; }
+
+  /* ── LOGIN ── */
+  .login-wrap { min-height:100vh; background:var(--brand-dark); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .login-card { background:#fff; border-radius:20px; padding:32px 28px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
+  .login-brand { text-align:center; margin-bottom:24px; }
+  .login-farm-name { font-size:20px; font-weight:700; color:var(--brand-dark); }
+  .login-farm-logo { width:64px; height:64px; object-fit:contain; border-radius:10px; margin:8px auto; display:block; }
+  .login-app-name { font-size:13px; font-weight:700; color:var(--brand); margin-top:8px; }
+  .login-app-sub { font-size:11px; color:var(--text-hint); }
+  .login-divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+  .login-heading { font-size:16px; font-weight:700; color:var(--text); margin-bottom:16px; }
+  .login-step { display:none; }
+  .login-step.active { display:block; }
+  .login-error { background:var(--danger-light); color:var(--danger); padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:14px; display:none; }
+  .login-footer { color:rgba(255,255,255,0.3); font-size:11px; margin-top:16px; text-align:center; }
+
+  /* ── FORM CONTROLS ── */
+  .fg { margin-bottom:14px; }
+  .flabel { font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:5px; }
+  .fcontrol { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-size:15px; font-family:inherit; outline:none; transition:border-color 0.15s; background:#fff; }
+  .fcontrol:focus { border-color:var(--brand); }
+  .fhint { font-size:11px; color:var(--text-hint); margin-top:4px; display:block; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 18px; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:opacity 0.15s; }
+  .btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-primary { background:var(--brand); color:#fff; }
+  .btn-primary:active { opacity:0.85; }
+  .btn-outline { background:transparent; color:var(--brand); border:1.5px solid var(--brand); }
+  .btn-danger { background:var(--danger); color:#fff; }
+  .btn-full { width:100%; padding:13px; font-size:15px; }
+  .btn-sm { padding:7px 14px; font-size:13px; }
+  .btn-link { background:none; border:none; color:var(--brand); font-size:13px; cursor:pointer; font-family:inherit; padding:4px 0; text-decoration:underline; }
+
+  /* ── APP SHELL ── */
+  .app-shell { flex:1; display:flex; flex-direction:column; max-width:480px; margin:0 auto; width:100%; }
+  .app-header { background:var(--brand-dark); padding:16px 20px 20px; color:#fff; position:sticky; top:0; z-index:10; }
+  .app-header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .app-header-name { font-size:15px; font-weight:700; }
+  .app-header-sub { font-size:11px; opacity:0.6; }
+  .app-content { flex:1; padding:16px; overflow-y:auto; }
+  .app-nav { background:#fff; border-top:1px solid var(--border); display:flex; position:sticky; bottom:0; z-index:10; }
+  .nav-tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px; border:none; background:none; cursor:pointer; font-family:inherit; color:var(--text-hint); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; transition:color 0.15s; }
+  .nav-tab .tab-icon { font-size:20px; }
+  .nav-tab.active { color:var(--brand); }
+
+  /* ── CARDS ── */
+  .card { background:#fff; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:14px; overflow:hidden; }
+  .card-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .card-title { font-size:14px; font-weight:700; color:var(--text); }
+  .card-body { padding:14px 16px; }
+
+  /* ── BALANCE HERO ── */
+  .balance-hero { background:linear-gradient(135deg,var(--brand-dark),var(--brand-mid)); border-radius:var(--radius); padding:24px 20px; color:#fff; margin-bottom:14px; text-align:center; }
+  .balance-label { font-size:12px; opacity:0.7; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .balance-amount { font-size:42px; font-weight:800; letter-spacing:-1px; }
+  .balance-days { font-size:13px; opacity:0.75; margin-top:6px; }
+  .balance-status { display:inline-block; margin-top:10px; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; }
+  .balance-status.ok { background:rgba(255,255,255,0.2); color:#fff; }
+  .balance-status.warn { background:#FEF3C7; color:#92400E; }
+  .balance-status.danger { background:#FEE2E2; color:#991B1B; }
+
+  /* ── DELIVERY STATUS ── */
+  .del-status-card { border-radius:var(--radius); padding:14px 16px; margin-bottom:14px; display:flex; align-items:center; gap:14px; }
+  .del-status-card.delivered { background:#ECFDF5; border:1px solid #6EE7B7; }
+  .del-status-card.pending { background:#FFF7ED; border:1px solid #FCD34D; }
+  .del-status-card.none { background:var(--bg); border:1px solid var(--border); }
+  .del-status-icon { font-size:28px; flex-shrink:0; }
+  .del-status-text { font-size:14px; font-weight:600; }
+  .del-status-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+
+  /* ── STAT ROW ── */
+  .stat-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .stat-box { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px; text-align:center; }
+  .stat-box-val { font-size:22px; font-weight:700; color:var(--brand); }
+  .stat-box-label { font-size:11px; color:var(--text-muted); margin-top:3px; text-transform:uppercase; letter-spacing:0.3px; }
+
+  /* ── TABLE ── */
+  .tbl { width:100%; border-collapse:collapse; font-size:13px; }
+  .tbl th { text-align:left; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.3px; padding:8px 12px; border-bottom:2px solid var(--border); }
+  .tbl td { padding:10px 12px; border-bottom:1px solid #f0f4f3; }
+  .tbl tr:last-child td { border-bottom:none; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
+  .badge-delivered { background:#D1FAE5; color:#065F46; }
+  .badge-partial { background:#FEF3C7; color:#92400E; }
+  .badge-missed { background:#FEE2E2; color:#991B1B; }
+  .badge-pending { background:#FEF3C7; color:#92400E; }
+  .badge-approved { background:#D1FAE5; color:#065F46; }
+  .badge-rejected { background:#FEE2E2; color:#991B1B; }
+
+  /* ── PAUSE REQUEST ── */
+  .pause-info { background:var(--brand-light); border-radius:10px; padding:13px 15px; font-size:13px; color:var(--brand-dark); margin-bottom:16px; line-height:1.6; }
+  .date-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  /* ── EMPTY ── */
+  .empty { text-align:center; padding:40px 20px; color:var(--text-hint); }
+  .empty-icon { font-size:36px; margin-bottom:10px; }
+  .empty p { font-size:14px; }
+
+  /* ── TOAST ── */
+  .toasts { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:999; display:flex; flex-direction:column; gap:8px; width:calc(100% - 32px); max-width:420px; pointer-events:none; }
+  .toast { padding:11px 16px; border-radius:10px; font-size:13px; font-weight:600; color:#fff; animation:slideUp 0.25s ease; }
+  .toast-success { background:#059669; }
+  .toast-error { background:#DC2626; }
+  .toast-info { background:#0F6E56; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── PIN INPUT ── */
+  .pin-row { display:flex; gap:10px; justify-content:center; margin:16px 0; }
+  .pin-box { width:52px; height:60px; border:2px solid var(--border); border-radius:10px; font-size:24px; font-weight:700; text-align:center; outline:none; font-family:inherit; color:var(--text); transition:border-color 0.15s; }
+  .pin-box:focus { border-color:var(--brand); }
+
+  /* ── SET PIN ── */
+  .set-pin-wrap { text-align:center; padding:8px 0; }
+  .set-pin-wrap p { font-size:13px; color:var(--text-muted); margin-bottom:16px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-farm-name" id="c-farm-name">My Dairy</div>
+        <div id="c-farm-logo-wrap"></div>
+        <div class="login-app-name">🥛 GauRas</div>
+        <div class="login-app-sub">Milk Distribution Management</div>
+      </div>
+      <hr class="login-divider">
+
+      <!-- Step 1: Phone -->
+      <div class="login-step active" id="step-phone">
+        <div class="login-heading">Customer Login</div>
+        <div class="login-error" id="phone-error"></div>
+        <div class="fg">
+          <label class="flabel">Registered Phone Number</label>
+          <input class="fcontrol" id="inp-phone" type="tel" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter')lookupPhone()">
+          <span class="fhint">Enter the phone number registered with your dairy</span>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="lookupPhone()" id="btn-phone">Continue →</button>
+      </div>
+
+      <!-- Step 2a: Enter PIN -->
+      <div class="login-step" id="step-pin">
+        <div class="login-heading">Enter Your PIN</div>
+        <div class="login-error" id="pin-error"></div>
+        <div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-muted)" id="pin-customer-name"></div>
+        <div class="pin-row">
+          <input class="pin-box" id="pin-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'pin-2')" onkeydown="pinKey(event,this,'','pin-2')">
+          <input class="pin-box" id="pin-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'pin-3')" onkeydown="pinKey(event,this,'pin-1','pin-3')">
+          <input class="pin-box" id="pin-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'pin-4')" onkeydown="pinKey(event,this,'pin-2','pin-4')">
+          <input class="pin-box" id="pin-4" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'')" onkeydown="pinKey(event,this,'pin-3','')">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="verifyPin()" id="btn-pin">Login</button>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn-link" onclick="goStep('step-phone')">← Use different number</button>
+        </div>
+      </div>
+
+      <!-- Step 2b: Set PIN (first time) -->
+      <div class="login-step" id="step-set-pin">
+        <div class="login-heading">Set Your PIN</div>
+        <div class="set-pin-wrap">
+          <p>Welcome! Set a 4-digit PIN to secure your account. You will use this every time you login.</p>
+        </div>
+        <div class="login-error" id="setpin-error"></div>
+        <div class="fg">
+          <label class="flabel">New PIN</label>
+          <div class="pin-row" style="justify-content:flex-start;gap:8px">
+            <input class="pin-box" id="sp-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'sp-2')" onkeydown="pinKey(event,this,'','sp-2')">
+            <input class="pin-box" id="sp-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'sp-3')" onkeydown="pinKey(event,this,'sp-1','sp-3')">
+            <input class="pin-box" id="sp-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'sp-4')" onkeydown="pinKey(event,this,'sp-2','sp-4')">
+            <input class="pin-box" id="sp-4" maxlength="1" inputmode="numeric" type="password" onkeydown="pinKey(event,this,'sp-3','')">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="flabel">Confirm PIN</label>
+          <div class="pin-row" style="justify-content:flex-start;gap:8px">
+            <input class="pin-box" id="sc-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'sc-2')" onkeydown="pinKey(event,this,'','sc-2')">
+            <input class="pin-box" id="sc-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'sc-3')" onkeydown="pinKey(event,this,'sc-1','sc-3')">
+            <input class="pin-box" id="sc-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'sc-4')" onkeydown="pinKey(event,this,'sc-2','sc-4')">
+            <input class="pin-box" id="sc-4" maxlength="1" inputmode="numeric" type="password" onkeydown="pinKey(event,this,'sc-3','')">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="savePin()">Set PIN & Login</button>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn-link" onclick="goStep('step-phone')">← Back</button>
+        </div>
+      </div>
+    </div>
+    <div class="login-footer">GauRas &copy; Girdhaam &middot; Milk Distribution Management</div>
+  </div>
+</div>
+
+<!-- ══ APP SCREEN ══ -->
+<div class="screen" id="screen-app">
+  <div class="app-shell">
+    <div class="app-header">
+      <div class="app-header-top">
+        <div>
+          <div class="app-header-name" id="app-cust-name">Customer</div>
+          <div class="app-header-sub" id="app-route-name"></div>
+        </div>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="app-content" id="app-content">
+      <!-- rendered by JS -->
+    </div>
+
+    <nav class="app-nav">
+      <button class="nav-tab active" id="tab-home" onclick="showTab('home')">
+        <span class="tab-icon">🏠</span>Home
+      </button>
+      <button class="nav-tab" id="tab-statement" onclick="showTab('statement')">
+        <span class="tab-icon">📋</span>Statement
+      </button>
+      <button class="nav-tab" id="tab-pause" onclick="showTab('pause')">
+        <span class="tab-icon">⏸️</span>Pause
+      </button>
+      <button class="nav-tab" id="tab-profile" onclick="showTab('profile')">
+        <span class="tab-icon">👤</span>Profile
+      </button>
+    </nav>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ── CONFIG ──
+const SB_URL = 'https://plqujrordybzncvvkqgg.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBscXVqcm9yZHliem5jdnZrcWdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTQyOTMsImV4cCI6MjA5MDg5MDI5M30.MOmPuTwzoRBteAUCKbdPqOlS0zgWiRgERMZr2FzyyZA';
+
+// ── STATE ──
+var _customer = null;
+var _wallet = null;
+var _deliveries = [];
+var _topups = [];
+var _pauseRequests = [];
+var _routes = [];
+var _rates = [];
+var _foundCustomer = null; // during login
+var _currentTab = 'home';
+
+// ── DB ──
+const db = {
+  async get(table, query) {
+    const url = `${SB_URL}/rest/v1/${table}${query?'?'+query:''}`;
+    const r = await fetch(url, { headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json' } });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async update(table, id, data) {
+    const url = `${SB_URL}/rest/v1/${table}?id=eq.${id}`;
+    const r = await fetch(url, { method:'PATCH', headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json', 'Prefer':'return=representation' }, body:JSON.stringify(data) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  async insert(table, data) {
+    const url = `${SB_URL}/rest/v1/${table}`;
+    const r = await fetch(url, { method:'POST', headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json', 'Prefer':'return=representation' }, body:JSON.stringify(data) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+};
+
+// ── HELPERS ──
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) {
+  if (!d) return '--';
+  var dt = new Date(d+'T00:00:00');
+  return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function hashPin(pin) { return btoa('gauraspin_'+pin+'_customer'); }
+function getRateForDate(dateStr) {
+  var sorted = _rates.filter(function(r){ return r.effective_from <= dateStr; }).sort(function(a,b){ return b.effective_from.localeCompare(a.effective_from); });
+  return sorted.length ? (sorted[0].rate_per_litre||0) : 0;
+}
+function daysRemaining() {
+  if (!_wallet || !_customer) return 0;
+  var rate = getRateForDate(todayStr());
+  var daily = (((_customer.morning_quota||0)+(_customer.evening_quota||0)) * rate);
+  if (daily <= 0) return 999;
+  return Math.floor((_wallet.balance||0) / daily);
+}
+function toast(msg, type) {
+  type = type||'info';
+  var el = document.createElement('div');
+  el.className = 'toast toast-'+type;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(function(){ el.remove(); }, 3000);
+}
+
+// ── BRAND ──
+function applyBrand() {
+  try {
+    var name = localStorage.getItem('gauras_brand_name') || '';
+    var logo = localStorage.getItem('gauras_logo') || '';
+    var nameEl = document.getElementById('c-farm-name');
+    if (nameEl) nameEl.textContent = name || 'My Dairy';
+    var logoWrap = document.getElementById('c-farm-logo-wrap');
+    if (logoWrap && logo) {
+      logoWrap.innerHTML = '<img src="'+logo+'" class="login-farm-logo" alt="Logo">';
+    }
+  } catch(e){}
+}
+
+// ── PIN HELPERS ──
+function pinNext(el, nextId) {
+  if (el.value && nextId) {
+    var next = document.getElementById(nextId);
+    if (next) next.focus();
+  }
+}
+function pinKey(event, el, prevId, nextId) {
+  if (event.key === 'Backspace' && !el.value && prevId) {
+    var prev = document.getElementById(prevId);
+    if (prev) { prev.value=''; prev.focus(); }
+  }
+  if (event.key === 'Enter') {
+    var btn = el.closest('.login-step').querySelector('.btn-primary');
+    if (btn) btn.click();
+  }
+}
+function getPinValue(prefix) {
+  return ['1','2','3','4'].map(function(n){ return (document.getElementById(prefix+n)||{}).value||''; }).join('');
+}
+function clearPinBoxes(prefix) {
+  ['1','2','3','4'].forEach(function(n){ var el=document.getElementById(prefix+n); if(el) el.value=''; });
+}
+function goStep(stepId) {
+  document.querySelectorAll('.login-step').forEach(function(el){ el.classList.remove('active'); });
+  var el = document.getElementById(stepId);
+  if (el) el.classList.add('active');
+  ['phone-error','pin-error','setpin-error'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display='none'; });
+}
+function showLoginError(id, msg) {
+  var el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ── LOGIN FLOW ──
+async function lookupPhone() {
+  var phone = (document.getElementById('inp-phone').value||'').trim().replace(/\D/g,'');
+  if (!phone || phone.length < 10) return showLoginError('phone-error', 'Please enter a valid 10-digit phone number');
+  var btn = document.getElementById('btn-phone');
+  btn.textContent = 'Looking up...'; btn.disabled = true;
+  try {
+    // Search by phone or whatsapp
+    var results = await db.get('gs_customers', 'phone=eq.'+phone+'&is_active=eq.true&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,pin_set_at,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
+    if (!results || results.length === 0) {
+      // Try whatsapp number
+      results = await db.get('gs_customers', 'whatsapp=eq.'+phone+'&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,pin_set_at,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
+    }
+    if (!results || results.length === 0) {
+      showLoginError('phone-error', 'Phone number not found. Please contact your dairy.');
+      return;
+    }
+    _foundCustomer = results[0];
+    if (_foundCustomer.status === 'Stopped') {
+      showLoginError('phone-error', 'Your account has been stopped. Please contact your dairy.');
+      return;
+    }
+    // Check if PIN is set
+    if (_foundCustomer.customer_pin) {
+      // Show PIN entry
+      document.getElementById('pin-customer-name').textContent =
+        'Welcome back, ' + (_foundCustomer.first_name||'') + '!';
+      clearPinBoxes('pin-');
+      goStep('step-pin');
+      setTimeout(function(){ var el=document.getElementById('pin-1'); if(el) el.focus(); }, 150);
+    } else {
+      // First time — set PIN
+      clearPinBoxes('sp-'); clearPinBoxes('sc-');
+      goStep('step-set-pin');
+      setTimeout(function(){ var el=document.getElementById('sp-1'); if(el) el.focus(); }, 150);
+    }
+  } catch(e) {
+    showLoginError('phone-error', 'Error: ' + e.message);
+  } finally {
+    btn.textContent = 'Continue →'; btn.disabled = false;
+  }
+}
+
+async function verifyPin() {
+  var pin = getPinValue('pin-');
+  if (pin.length < 4) return showLoginError('pin-error', 'Please enter your 4-digit PIN');
+  var btn = document.getElementById('btn-pin');
+  btn.textContent = 'Verifying...'; btn.disabled = true;
+  try {
+    if (hashPin(pin) !== _foundCustomer.customer_pin) {
+      showLoginError('pin-error', 'Incorrect PIN. Please try again.');
+      clearPinBoxes('pin-');
+      setTimeout(function(){ var el=document.getElementById('pin-1'); if(el) el.focus(); }, 100);
+      return;
+    }
+    await completeLogin(_foundCustomer);
+  } catch(e) { showLoginError('pin-error', 'Error: '+e.message); }
+  finally { btn.textContent = 'Login'; btn.disabled = false; }
+}
+
+async function savePin() {
+  var pin = getPinValue('sp-');
+  var confirm = getPinValue('sc-');
+  if (pin.length < 4) return showLoginError('setpin-error', 'Please enter a 4-digit PIN');
+  if (pin !== confirm) return showLoginError('setpin-error', 'PINs do not match. Please try again.');
+  try {
+    var hash = hashPin(pin);
+    await db.update('gs_customers', _foundCustomer.id, { customer_pin: hash, pin_set_at: new Date().toISOString() });
+    _foundCustomer.customer_pin = hash;
+    await completeLogin(_foundCustomer);
+  } catch(e) { showLoginError('setpin-error', 'Error: '+e.message); }
+}
+
+async function completeLogin(cust) {
+  _customer = cust;
+  // Save session
+  try { sessionStorage.setItem('gauras_cust_session', JSON.stringify({ id: cust.id })); } catch(e){}
+  // Load all data
+  await loadCustomerData();
+  // Switch to app
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  showTab('home');
+}
+
+async function loadCustomerData() {
+  var id = _customer.id;
+  try { _routes = await db.get('gs_routes','order=name.asc'); } catch(e){ _routes=[]; }
+  try { _rates = await db.get('gs_rates','order=effective_from.desc'); } catch(e){ _rates=[]; }
+  try {
+    var ws = await db.get('gs_wallets','customer_id=eq.'+id);
+    _wallet = ws && ws.length ? ws[0] : { balance:0 };
+  } catch(e){ _wallet={balance:0}; }
+  try { _deliveries = await db.get('gs_deliveries','customer_id=eq.'+id+'&order=delivery_date.desc&limit=60'); } catch(e){ _deliveries=[]; }
+  try { _topups = await db.get('gs_topups','customer_id=eq.'+id+'&order=topup_date.desc&limit=30'); } catch(e){ _topups=[]; }
+  try { _pauseRequests = await db.get('gs_pause_requests','customer_id=eq.'+id+'&order=requested_at.desc'); } catch(e){ _pauseRequests=[]; }
+  // Update header
+  var nameEl = document.getElementById('app-cust-name');
+  if (nameEl) nameEl.textContent = (_customer.first_name||'') + ' ' + (_customer.last_name||'');
+  var route = _routes.find(function(r){ return r.id === _customer.route_id; });
+  var routeEl = document.getElementById('app-route-name');
+  if (routeEl) routeEl.textContent = route ? route.name : '';
+}
+
+function doLogout() {
+  if (!confirm('Logout from your account?')) return;
+  try { sessionStorage.removeItem('gauras_cust_session'); } catch(e){}
+  _customer = null; _wallet = null;
+  document.getElementById('screen-app').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('inp-phone').value = '';
+  goStep('step-phone');
+}
+
+// ── CHECK EXISTING SESSION ──
+async function checkSession() {
+  try {
+    var saved = sessionStorage.getItem('gauras_cust_session');
+    if (saved) {
+      var s = JSON.parse(saved);
+      var results = await db.get('gs_customers','id=eq.'+s.id+'&select=id,first_name,last_name,customer_code,phone,whatsapp,morning_quota,evening_quota,route_id,customer_pin,status,joining_date,building_name,flat_no,floor,street,city,payment_mode,grace_days,schedule_type,delivery_notes');
+      if (results && results.length > 0 && results[0].status !== 'Stopped') {
+        _customer = results[0];
+        await loadCustomerData();
+        document.getElementById('screen-login').classList.remove('active');
+        document.getElementById('screen-app').classList.add('active');
+        showTab('home');
+        return;
+      }
+    }
+  } catch(e){}
+}
+
+// ── TABS ──
+function showTab(tab) {
+  _currentTab = tab;
+  document.querySelectorAll('.nav-tab').forEach(function(el){ el.classList.remove('active'); });
+  var tabEl = document.getElementById('tab-'+tab);
+  if (tabEl) tabEl.classList.add('active');
+  var content = document.getElementById('app-content');
+  if (tab === 'home') renderHome(content);
+  else if (tab === 'statement') renderStatement(content);
+  else if (tab === 'pause') renderPause(content);
+  else if (tab === 'profile') renderProfile(content);
+}
+
+// ── HOME TAB ──
+function renderHome(el) {
+  var today = todayStr();
+  var rate = getRateForDate(today);
+  var daily = ((_customer.morning_quota||0)+(_customer.evening_quota||0)) * rate;
+  var days = daysRemaining();
+  var bal = _wallet ? (_wallet.balance||0) : 0;
+
+  // Balance hero
+  var balColor = days >= 7 ? 'ok' : days >= 3 ? 'warn' : 'danger';
+  var balLabel = days >= 7 ? '✓ Healthy balance' : days >= 3 ? '⚠ Balance running low' : days >= 0 ? '🔴 Top up urgently' : '🔴 Balance overdue';
+
+  var html = '<div class="balance-hero">';
+  html += '<div class="balance-label">Wallet Balance</div>';
+  html += '<div class="balance-amount">Rs.'+(bal>=0?bal.toFixed(0):'-'+Math.abs(bal).toFixed(0))+'</div>';
+  html += '<div class="balance-days">'+(daily>0?days+' days remaining at Rs.'+daily.toFixed(0)+'/day':'')+'</div>';
+  html += '<span class="balance-status '+balColor+'">'+balLabel+'</span>';
+  html += '</div>';
+
+  // Today's delivery status
+  var todayDels = _deliveries.filter(function(d){ return d.delivery_date === today; });
+  html += '<div>';
+  if (todayDels.length > 0) {
+    todayDels.forEach(function(d){
+      var isDelivered = d.status === 'Delivered' || d.status === 'Partial';
+      html += '<div class="del-status-card '+(isDelivered?'delivered':'none')+'">';
+      html += '<div class="del-status-icon">'+(isDelivered?'✅':'❌')+'</div>';
+      html += '<div><div class="del-status-text">'+esc(d.session)+' — '+esc(d.status)+'</div>';
+      html += '<div class="del-status-sub">'+(d.qty_delivered||0)+'L delivered'+(d.reason?' &middot; '+esc(d.reason):'')+'</div></div>';
+      html += '</div>';
+    });
+  } else {
+    html += '<div class="del-status-card pending">';
+    html += '<div class="del-status-icon">⏳</div>';
+    html += '<div><div class="del-status-text">Delivery Pending</div>';
+    html += '<div class="del-status-sub">No delivery recorded yet for today</div></div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Quick stats
+  var monthDels = _deliveries.filter(function(d){ return (d.delivery_date||'').startsWith(today.slice(0,7)); });
+  var monthLitres = monthDels.reduce(function(s,d){ return s+(d.qty_delivered||0);},0);
+  var lastTopup = _topups.length ? _topups[0] : null;
+
+  html += '<div class="stat-row">';
+  html += '<div class="stat-box"><div class="stat-box-val">'+monthLitres.toFixed(1)+'L</div><div class="stat-box-label">This Month</div></div>';
+  html += '<div class="stat-box"><div class="stat-box-val">'+((_customer.morning_quota||0)+(_customer.evening_quota||0))+'L</div><div class="stat-box-label">Daily Quota</div></div>';
+  html += '</div>';
+
+  // Last top-up
+  if (lastTopup) {
+    html += '<div class="card"><div class="card-body" style="display:flex;align-items:center;justify-content:space-between">';
+    html += '<div><div style="font-size:12px;color:var(--text-muted)">Last Top-up</div>';
+    html += '<div style="font-size:16px;font-weight:700;color:var(--brand)">Rs.'+lastTopup.amount+'</div>';
+    html += '<div style="font-size:11px;color:var(--text-hint)">'+fmtDate(lastTopup.topup_date)+'</div></div>';
+    html += '<div style="font-size:11px;color:var(--text-muted);text-align:right">'+esc(lastTopup.payment_mode||'')+'</div>';
+    html += '</div></div>';
+  }
+
+  // Low balance CTA
+  if (days < 3) {
+    html += '<div class="card" style="border-color:var(--danger)">';
+    html += '<div class="card-body">';
+    html += '<div style="font-weight:700;color:var(--danger);margin-bottom:8px">⚠ Please top up your wallet</div>';
+    html += '<div style="font-size:13px;color:var(--text-muted)">Contact your dairy or milkman to top up and continue uninterrupted supply.</div>';
+    html += '</div></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ── STATEMENT TAB ──
+function renderStatement(el) {
+  var html = '';
+
+  // Deliveries
+  html += '<div class="card">';
+  html += '<div class="card-header"><div class="card-title">Delivery History</div><div style="font-size:12px;color:var(--text-muted)">Last 60 days</div></div>';
+  if (_deliveries.length === 0) {
+    html += '<div class="empty"><div class="empty-icon">🚴</div><p>No deliveries recorded yet.</p></div>';
+  } else {
+    html += '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Date</th><th>Session</th><th>Qty</th><th>Status</th><th>Deducted</th></tr></thead><tbody>';
+    _deliveries.forEach(function(d){
+      var sc = d.status==='Delivered'?'delivered':d.status==='Partial'?'partial':'missed';
+      html += '<tr>'
+        +'<td style="white-space:nowrap">'+fmtDate(d.delivery_date)+'</td>'
+        +'<td>'+esc(d.session||'')+'</td>'
+        +'<td style="font-weight:600">'+(d.qty_delivered||0)+'L</td>'
+        +'<td><span class="badge badge-'+sc+'">'+esc(d.status||'')+'</span></td>'
+        +'<td style="color:var(--danger)">Rs.'+(d.amount_deducted||0).toFixed(0)+'</td>'
+        +'</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+
+  // Top-ups
+  html += '<div class="card">';
+  html += '<div class="card-header"><div class="card-title">Top-up History</div></div>';
+  if (_topups.length === 0) {
+    html += '<div class="empty"><div class="empty-icon">💰</div><p>No top-ups recorded yet.</p></div>';
+  } else {
+    html += '<table class="tbl"><thead><tr><th>Date</th><th>Amount</th><th>Mode</th></tr></thead><tbody>';
+    _topups.forEach(function(t){
+      html += '<tr>'
+        +'<td style="white-space:nowrap">'+fmtDate(t.topup_date)+'</td>'
+        +'<td style="font-weight:700;color:var(--brand)">Rs.'+t.amount+'</td>'
+        +'<td style="font-size:12px;color:var(--text-muted)">'+esc(t.payment_mode||'')+'</td>'
+        +'</tr>';
+    });
+    html += '</tbody></table>';
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+// ── PAUSE TAB ──
+function renderPause(el) {
+  var today = todayStr();
+  var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  var tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  var html = '';
+
+  // Existing pause requests
+  if (_pauseRequests.length > 0) {
+    html += '<div class="card"><div class="card-header"><div class="card-title">Your Pause Requests</div></div>';
+    html += '<table class="tbl"><thead><tr><th>From</th><th>To</th><th>Status</th></tr></thead><tbody>';
+    _pauseRequests.slice(0,5).forEach(function(p){
+      var sc = p.status==='Approved'?'approved':p.status==='Rejected'?'rejected':'pending';
+      html += '<tr>'
+        +'<td>'+fmtDate(p.from_date)+'</td>'
+        +'<td>'+fmtDate(p.to_date)+'</td>'
+        +'<td><span class="badge badge-'+sc+'">'+esc(p.status||'Pending')+'</span></td>'
+        +'</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // Request form
+  html += '<div class="card"><div class="card-header"><div class="card-title">Request Delivery Pause</div></div>';
+  html += '<div class="card-body">';
+  html += '<div class="pause-info">📅 Request a pause to stop deliveries for a period. Your wallet balance will not be deducted during the pause. Requests are reviewed by your dairy admin.</div>';
+  html += '<div class="date-row">';
+  html += '<div class="fg"><label class="flabel">From Date</label><input class="fcontrol" type="date" id="pause-from" min="'+tomorrowStr+'" value="'+tomorrowStr+'"></div>';
+  html += '<div class="fg"><label class="flabel">To Date</label><input class="fcontrol" type="date" id="pause-to" min="'+tomorrowStr+'"></div>';
+  html += '</div>';
+  html += '<div class="fg"><label class="flabel">Reason (optional)</label><input class="fcontrol" id="pause-reason" placeholder="e.g. Out of town, Festival, etc."></div>';
+  html += '<button class="btn btn-primary btn-full" onclick="submitPauseRequest()">Submit Pause Request</button>';
+  html += '</div></div>';
+
+  el.innerHTML = html;
+}
+
+async function submitPauseRequest() {
+  var fromDate = (document.getElementById('pause-from').value||'').trim();
+  var toDate = (document.getElementById('pause-to').value||'').trim();
+  var reason = (document.getElementById('pause-reason').value||'').trim();
+  var today = todayStr();
+
+  if (!fromDate) return toast('Please select a from date','error');
+  if (!toDate) return toast('Please select a to date','error');
+  if (fromDate <= today) return toast('From date must be tomorrow or later','error');
+  if (toDate < fromDate) return toast('To date must be after from date','error');
+
+  try {
+    var res = await db.insert('gs_pause_requests', {
+      customer_id: _customer.id,
+      from_date: fromDate,
+      to_date: toDate,
+      reason: reason || null,
+      status: 'Pending'
+    });
+    _pauseRequests.unshift(res[0]);
+    toast('Pause request submitted! Your dairy will review it shortly.','success');
+    document.getElementById('pause-from').value='';
+    document.getElementById('pause-to').value='';
+    document.getElementById('pause-reason').value='';
+    renderPause(document.getElementById('app-content'));
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+// ── PROFILE TAB ──
+function renderProfile(el) {
+  var c = _customer;
+  var route = _routes.find(function(r){ return r.id === c.route_id; });
+  var rate = getRateForDate(todayStr());
+  var daily = ((c.morning_quota||0)+(c.evening_quota||0)) * rate;
+  var addr = [c.flat_no, c.building_name, c.floor?'Floor '+c.floor:'', c.street, c.city].filter(Boolean).join(', ');
+
+  var html = '<div class="card">';
+  html += '<div class="card-header"><div class="card-title">My Profile</div></div>';
+  html += '<div class="card-body">';
+
+  function row(label, val) {
+    if (!val) return '';
+    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f4f3">'
+      +'<div style="font-size:12px;color:var(--text-muted);font-weight:600">'+label+'</div>'
+      +'<div style="font-size:13px;font-weight:600;text-align:right;max-width:60%">'+val+'</div>'
+      +'</div>';
+  }
+
+  html += row('Name', (c.first_name||'')+' '+(c.last_name||''));
+  html += row('Customer Code', c.customer_code||'');
+  html += row('Phone', c.phone||'');
+  html += row('Route', route ? route.name : '');
+  html += row('Morning Quota', c.morning_quota ? c.morning_quota+'L' : null);
+  html += row('Evening Quota', c.evening_quota ? c.evening_quota+'L' : null);
+  html += row('Daily Cost', daily ? 'Rs.'+daily.toFixed(0)+'/day' : null);
+  html += row('Payment Mode', c.payment_mode||'');
+  html += row('Joined', c.joining_date ? fmtDate(c.joining_date) : null);
+  html += row('Address', addr||null);
+  html += '</div></div>';
+
+  // Change PIN
+  html += '<div class="card"><div class="card-header"><div class="card-title">Change PIN</div></div>';
+  html += '<div class="card-body">';
+  html += '<div class="fg"><label class="flabel">New PIN</label>';
+  html += '<div class="pin-row" style="justify-content:flex-start;gap:8px">';
+  html += '<input class="pin-box" id="cp-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,\'cp-2\')" onkeydown="pinKey(event,this,\'\',\'cp-2\')">';
+  html += '<input class="pin-box" id="cp-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,\'cp-3\')" onkeydown="pinKey(event,this,\'cp-1\',\'cp-3\')">';
+  html += '<input class="pin-box" id="cp-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,\'cp-4\')" onkeydown="pinKey(event,this,\'cp-2\',\'cp-4\')">';
+  html += '<input class="pin-box" id="cp-4" maxlength="1" inputmode="numeric" type="password" onkeydown="pinKey(event,this,\'cp-3\',\'\')">';
+  html += '</div></div>';
+  html += '<div class="fg"><label class="flabel">Confirm PIN</label>';
+  html += '<div class="pin-row" style="justify-content:flex-start;gap:8px">';
+  html += '<input class="pin-box" id="cc-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,\'cc-2\')" onkeydown="pinKey(event,this,\'\',\'cc-2\')">';
+  html += '<input class="pin-box" id="cc-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,\'cc-3\')" onkeydown="pinKey(event,this,\'cc-1\',\'cc-3\')">';
+  html += '<input class="pin-box" id="cc-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,\'cc-4\')" onkeydown="pinKey(event,this,\'cc-2\',\'cc-4\')">';
+  html += '<input class="pin-box" id="cc-4" maxlength="1" inputmode="numeric" type="password" onkeydown="pinKey(event,this,\'cc-3\',\'\')">';
+  html += '</div></div>';
+  html += '<button class="btn btn-outline btn-full" style="margin-top:4px" onclick="changePin()">Update PIN</button>';
+  html += '</div></div>';
+
+  el.innerHTML = html;
+}
+
+async function changePin() {
+  var pin = getPinValue('cp-');
+  var confirm2 = getPinValue('cc-');
+  if (pin.length < 4) return toast('Please enter a 4-digit PIN','error');
+  if (pin !== confirm2) return toast('PINs do not match','error');
+  try {
+    await db.update('gs_customers', _customer.id, { customer_pin: hashPin(pin) });
+    _customer.customer_pin = hashPin(pin);
+    toast('PIN updated successfully!','success');
+    clearPinBoxes('cp-'); clearPinBoxes('cc-');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+// ── INIT ──
+applyBrand();
+checkSession();
+setTimeout(function(){
+  var el = document.getElementById('inp-phone');
+  if (el && document.getElementById('screen-login').classList.contains('active')) el.focus();
+}, 300);
+</script>
+</body>
+</html>
