@@ -175,9 +175,69 @@
           <input class="pin-box" id="pin-4" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'')" onkeydown="pinKey(event,this,'pin-3','')">
         </div>
         <button class="btn btn-primary btn-full" onclick="verifyPin()" id="btn-pin">Login</button>
-        <div style="text-align:center;margin-top:12px">
+        <div style="text-align:center;margin-top:12px;display:flex;justify-content:space-between">
           <button class="btn-link" onclick="goStep('step-phone')">← Use different number</button>
+          <button class="btn-link" onclick="goStep('step-forgot-pin')">Forgot PIN?</button>
         </div>
+      </div>
+
+      <!-- Step: Forgot PIN -->
+      <div class="login-step" id="step-forgot-pin">
+        <div class="login-heading">Reset PIN</div>
+        <div class="login-error" id="forgot-error"></div>
+        <div class="set-pin-wrap">
+          <p>We will send a 4-digit reset code to your registered WhatsApp number.</p>
+        </div>
+        <div class="fg">
+          <label class="flabel">Your Phone Number</label>
+          <input class="fcontrol" id="forgot-phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="requestPINReset()" id="btn-forgot">Send Reset Code</button>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn-link" onclick="goStep('step-pin')">← Back to Login</button>
+        </div>
+      </div>
+
+      <!-- Step: Enter Reset Code -->
+      <div class="login-step" id="step-reset-code">
+        <div class="login-heading">Enter Reset Code</div>
+        <div class="login-error" id="reset-error"></div>
+        <div style="text-align:center;margin-bottom:8px;font-size:13px;color:var(--text-muted)">Enter the 4-digit code sent to your WhatsApp</div>
+        <div class="pin-row">
+          <input class="pin-box" id="rc-1" maxlength="1" inputmode="numeric" type="text" oninput="pinNext(this,'rc-2')" onkeydown="pinKey(event,this,'','rc-2')">
+          <input class="pin-box" id="rc-2" maxlength="1" inputmode="numeric" type="text" oninput="pinNext(this,'rc-3')" onkeydown="pinKey(event,this,'rc-1','rc-3')">
+          <input class="pin-box" id="rc-3" maxlength="1" inputmode="numeric" type="text" oninput="pinNext(this,'rc-4')" onkeydown="pinKey(event,this,'rc-2','rc-4')">
+          <input class="pin-box" id="rc-4" maxlength="1" inputmode="numeric" type="text" onkeydown="pinKey(event,this,'rc-3','')">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="verifyResetCode()" id="btn-reset-verify">Verify Code</button>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn-link" onclick="goStep('step-forgot-pin')">← Resend code</button>
+        </div>
+      </div>
+
+      <!-- Step: Set New PIN after reset -->
+      <div class="login-step" id="step-new-pin">
+        <div class="login-heading">Set New PIN</div>
+        <div class="login-error" id="newpin-error"></div>
+        <div class="fg">
+          <label class="flabel">New PIN</label>
+          <div class="pin-row" style="justify-content:flex-start;gap:8px">
+            <input class="pin-box" id="np-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'np-2')" onkeydown="pinKey(event,this,'','np-2')">
+            <input class="pin-box" id="np-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'np-3')" onkeydown="pinKey(event,this,'np-1','np-3')">
+            <input class="pin-box" id="np-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'np-4')" onkeydown="pinKey(event,this,'np-2','np-4')">
+            <input class="pin-box" id="np-4" maxlength="1" inputmode="numeric" type="password" onkeydown="pinKey(event,this,'np-3','')">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="flabel">Confirm PIN</label>
+          <div class="pin-row" style="justify-content:flex-start;gap:8px">
+            <input class="pin-box" id="nc-1" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'nc-2')" onkeydown="pinKey(event,this,'','nc-2')">
+            <input class="pin-box" id="nc-2" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'nc-3')" onkeydown="pinKey(event,this,'nc-1','nc-3')">
+            <input class="pin-box" id="nc-3" maxlength="1" inputmode="numeric" type="password" oninput="pinNext(this,'nc-4')" onkeydown="pinKey(event,this,'nc-2','nc-4')">
+            <input class="pin-box" id="nc-4" maxlength="1" inputmode="numeric" type="password" onkeydown="pinKey(event,this,'nc-3','')">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveNewPIN()">Set New PIN & Login</button>
       </div>
 
       <!-- Step 2b: Set PIN (first time) -->
@@ -308,7 +368,12 @@
           <div class="app-header-name" id="app-cust-name">Customer</div>
           <div class="app-header-sub" id="app-route-name"></div>
         </div>
-        <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="doLogout()">Logout</button>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="showTab('notifications')" style="position:relative;background:rgba(255,255,255,0.15);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;color:#fff;font-size:18px">
+            🔔<span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#DC2626;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center">0</span>
+          </button>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="doLogout()">Logout</button>
+        </div>
       </div>
     </div>
 
@@ -329,6 +394,9 @@
       <button class="nav-tab" id="tab-profile" onclick="showTab('profile')">
         <span class="tab-icon">👤</span>Profile
       </button>
+      <button class="nav-tab" id="tab-notifications" onclick="showTab('notifications')">
+        <span class="tab-icon">🔔</span>Alerts
+      </button>
     </nav>
   </div>
 </div>
@@ -346,6 +414,7 @@ var _wallet = null;
 var _deliveries = [];
 var _topups = [];
 var _pauseRequests = [];
+var _notifications = [];
 var _routes = [];
 var _rates = [];
 var _foundCustomer = null; // during login
@@ -559,6 +628,17 @@ async function loadCustomerData() {
   try { _deliveries = await db.get('gs_deliveries','customer_id=eq.'+id+'&order=delivery_date.desc&limit=60'); } catch(e){ _deliveries=[]; }
   try { _topups = await db.get('gs_topups','customer_id=eq.'+id+'&order=topup_date.desc&limit=30'); } catch(e){ _topups=[]; }
   try { _pauseRequests = await db.get('gs_pause_requests','customer_id=eq.'+id+'&order=requested_at.desc'); } catch(e){ _pauseRequests=[]; }
+  // Load notifications
+  try {
+    var notifs = await db.get('gs_notifications','customer_id=eq.'+id+'&order=created_at.desc&limit=20');
+    _notifications = notifs || [];
+    var unread = _notifications.filter(function(n){ return !n.is_read; }).length;
+    var badge = document.getElementById('notif-badge');
+    if (badge) {
+      badge.textContent = unread;
+      badge.style.display = unread > 0 ? 'block' : 'none';
+    }
+  } catch(e){ _notifications = []; }
   // Update header
   var nameEl = document.getElementById('app-cust-name');
   if (nameEl) nameEl.textContent = (_customer.first_name||'') + ' ' + (_customer.last_name||'');
@@ -684,6 +764,126 @@ async function submitRegistration() {
   }
 }
 
+// ── FORGOT PIN ──
+var _resetCustomer = null;
+var _resetCode = null;
+var _resetExpiry = null;
+
+async function requestPINReset() {
+  var phone = (document.getElementById('forgot-phone').value||'').trim().replace(/[^0-9]/g,'');
+  var errEl = document.getElementById('forgot-error');
+  errEl.style.display = 'none';
+  if (!phone || phone.length < 10) {
+    errEl.textContent = 'Please enter your 10-digit phone number';
+    errEl.style.display = 'block';
+    return;
+  }
+  var btn = document.getElementById('btn-forgot');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  try {
+    // Find customer
+    var results = await db.get('gs_customers','phone=eq.'+phone+'&select=id,first_name,last_name,phone,whatsapp');
+    if (!results || results.length === 0) {
+      results = await db.get('gs_customers','whatsapp=eq.'+phone+'&select=id,first_name,last_name,phone,whatsapp');
+    }
+    if (!results || results.length === 0) {
+      errEl.textContent = 'Phone number not found. Please contact your dairy.';
+      errEl.style.display = 'block';
+      return;
+    }
+    _resetCustomer = results[0];
+    // Generate 4-digit code
+    _resetCode = String(Math.floor(1000 + Math.random() * 9000));
+    _resetExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
+    // Save to DB
+    await db.insert('gs_pin_resets', {
+      customer_id: _resetCustomer.id,
+      reset_code: _resetCode,
+      expires_at: new Date(_resetExpiry).toISOString()
+    });
+    // Send via WhatsApp
+    var wa = (_resetCustomer.whatsapp || _resetCustomer.phone || '').replace(/[^0-9]/g,'');
+    if (wa.length === 10) wa = '91' + wa;
+    var msg = 'Your GauRas PIN reset code is: ' + _resetCode + '. Valid for 10 minutes. Do not share this code with anyone.';
+    window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
+    toast('Reset code sent to your WhatsApp!', 'success');
+    clearPinBoxes('rc-');
+    goStep('step-reset-code');
+    setTimeout(function(){ var el=document.getElementById('rc-1'); if(el) el.focus(); }, 150);
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.textContent = 'Send Reset Code'; btn.disabled = false;
+  }
+}
+
+async function verifyResetCode() {
+  var code = getPinValue('rc-');
+  var errEl = document.getElementById('reset-error');
+  errEl.style.display = 'none';
+  if (code.length < 4) {
+    errEl.textContent = 'Please enter the 4-digit reset code';
+    errEl.style.display = 'block';
+    return;
+  }
+  // Check expiry
+  if (Date.now() > _resetExpiry) {
+    errEl.textContent = 'Reset code has expired. Please request a new one.';
+    errEl.style.display = 'block';
+    return;
+  }
+  // Verify from DB
+  try {
+    var rows = await db.get('gs_pin_resets',
+      'customer_id=eq.'+_resetCustomer.id+'&reset_code=eq.'+code+'&used=eq.false&expires_at=gt.'+new Date().toISOString()+'&order=created_at.desc&limit=1'
+    );
+    if (!rows || rows.length === 0) {
+      errEl.textContent = 'Invalid or expired reset code. Please try again.';
+      errEl.style.display = 'block';
+      return;
+    }
+    // Mark code as used
+    await db.update('gs_pin_resets', rows[0].id, { used: true });
+    // Go to set new PIN
+    clearPinBoxes('np-'); clearPinBoxes('nc-');
+    goStep('step-new-pin');
+    setTimeout(function(){ var el=document.getElementById('np-1'); if(el) el.focus(); }, 150);
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+async function saveNewPIN() {
+  var pin = getPinValue('np-');
+  var confirm2 = getPinValue('nc-');
+  var errEl = document.getElementById('newpin-error');
+  errEl.style.display = 'none';
+  if (pin.length < 4) {
+    errEl.textContent = 'Please enter a 4-digit PIN';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pin !== confirm2) {
+    errEl.textContent = 'PINs do not match';
+    errEl.style.display = 'block';
+    return;
+  }
+  try {
+    await db.update('gs_customers', _resetCustomer.id, {
+      customer_pin: hashPin(pin),
+      pin_set_at: new Date().toISOString()
+    });
+    _resetCustomer.customer_pin = hashPin(pin);
+    toast('PIN updated! Logging you in...', 'success');
+    await completeLogin(_resetCustomer);
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
 async function checkSession() {
   try {
     var saved = sessionStorage.getItem('gauras_cust_session');
@@ -713,6 +913,7 @@ function showTab(tab) {
   else if (tab === 'statement') renderStatement(content);
   else if (tab === 'pause') renderPause(content);
   else if (tab === 'profile') renderProfile(content);
+  else if (tab === 'notifications') renderNotifications(content);
 }
 
 // ── HOME TAB ──
@@ -897,6 +1098,39 @@ async function submitPauseRequest() {
     document.getElementById('pause-reason').value='';
     renderPause(document.getElementById('app-content'));
   } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+// ── NOTIFICATIONS TAB ──
+async function renderNotifications(el) {
+  // Mark all as read
+  var unread = _notifications.filter(function(n){ return !n.is_read; });
+  if (unread.length > 0) {
+    unread.forEach(function(n){
+      db.update('gs_notifications', n.id, { is_read: true }).catch(function(){});
+      n.is_read = true;
+    });
+    var badge = document.getElementById('notif-badge');
+    if (badge) badge.style.display = 'none';
+  }
+  var html = '<div class="card">';
+  html += '<div class="card-header"><div class="card-title">Notifications</div></div>';
+  if (_notifications.length === 0) {
+    html += '<div class="empty"><div class="empty-icon">🔔</div><p>No notifications yet.</p></div>';
+  } else {
+    _notifications.forEach(function(n) {
+      var icon = n.type==='success'?'✅':n.type==='warning'?'⚠️':n.type==='delivery'?'🥛':'ℹ️';
+      var bg = n.is_read ? '' : 'background:var(--brand-light);';
+      html += '<div style="'+bg+'padding:12px 16px;border-bottom:1px solid #eef2f0;display:flex;gap:12px;align-items:flex-start">';
+      html += '<div style="font-size:20px;margin-top:2px">'+icon+'</div>';
+      html += '<div style="flex:1"><div style="font-size:13px;font-weight:600">'+esc(n.title)+'</div>';
+      html += '<div style="font-size:12px;color:var(--text-muted);margin-top:3px">'+esc(n.message)+'</div>';
+      html += '<div style="font-size:11px;color:var(--text-hint);margin-top:4px">'+fmtDate(n.created_at)+'</div></div>';
+      if (!n.is_read) html += '<div style="width:8px;height:8px;background:var(--brand);border-radius:50%;margin-top:4px;flex-shrink:0"></div>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 // ── PROFILE TAB ──
